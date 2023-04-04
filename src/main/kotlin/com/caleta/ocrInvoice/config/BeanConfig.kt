@@ -1,7 +1,10 @@
 package com.caleta.ocrInvoice.config
 
+import com.caleta.ocrInvoice.serviceImpl.MonitorServiceImpl
 import com.caleta.ocrInvoice.utilities.Ocr
 import net.sourceforge.tess4j.Tesseract
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -13,6 +16,7 @@ import java.nio.file.*
 @Configuration
 class BeanConfig {
 
+    private val LOG: Logger = LoggerFactory.getLogger(BeanConfig::class.java)
 
     @Value("\${monitor-folder-path}")
     private lateinit var monitorFolderPath: String
@@ -29,6 +33,9 @@ class BeanConfig {
     @Value("\${ocr-data-path}")
     private lateinit var dataPath: String
 
+    @Value("\${log-path}")
+    private lateinit var logPath: String
+
     @Bean("folderWatcherBean")
     fun folderWatcherBean(): WatchService? {
         checkDirectory()
@@ -38,7 +45,7 @@ class BeanConfig {
             val path: Path? = monitorFolderPath.let { Paths.get(it) }
             watchService?.let { path?.register(it, StandardWatchEventKinds.ENTRY_CREATE) }
         } catch (e: Exception) {
-            e.printStackTrace()
+            LOG.error(e.message)
         }
         return watchService
     }
@@ -56,6 +63,9 @@ class BeanConfig {
         if (!File(datePath).exists()) {
             File(datePath).mkdirs()
         }
+        if (!File(logPath).exists()) {
+            File(logPath).mkdirs()
+        }
 
     }
 
@@ -72,7 +82,6 @@ class BeanConfig {
             setLanguage("eng")
             setPageSegMode(1)
             setOcrEngineMode(1)
-
         }
         return tess
     }

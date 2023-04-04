@@ -43,7 +43,6 @@ class MonitorServiceImpl : MonitoringService {
     @Autowired
     private lateinit var ocr: Ocr
 
-
     @EventListener(value = [ApplicationReadyEvent::class], condition = "!@environment.acceptsProfiles('test')")
     override fun startMonitoring() {
         var key: WatchKey
@@ -83,6 +82,8 @@ class MonitorServiceImpl : MonitoringService {
             val text = ocr.performOcr(it)
             if (text.isNotEmpty()) {
                 infoList.add(text)
+            } else {
+                LOG.error("OCR returned empty string")
             }
         }
         infoList.withIndex().forEach { value ->

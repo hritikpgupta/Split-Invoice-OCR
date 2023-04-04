@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-	id 'org.springframework.boot' version '3.0.3'
+	id 'org.springframework.boot' version '2.7.6'
 	id 'io.spring.dependency-management' version '1.1.0'
 	id 'org.jetbrains.kotlin.jvm' version '1.7.22'
 	id 'org.jetbrains.kotlin.plugin.spring' version '1.7.22'
@@ -9,7 +9,7 @@ plugins {
 
 group = 'com.caleta'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
+sourceCompatibility = '11'
 
 repositories {
 	mavenCentral()
@@ -21,14 +21,13 @@ dependencies {
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
     implementation 'org.apache.pdfbox:pdfbox:2.0.27'
 	implementation 'net.sourceforge.tess4j:tess4j:5.6.0'
-    implementation 'org.springframework.boot:spring-boot-starter-log4j2:3.0.3'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 tasks.withType(KotlinCompile) {
 	kotlinOptions {
 		freeCompilerArgs = ['-Xjsr305=strict']
-		jvmTarget = '17'
+		jvmTarget = '11'
 	}
 }
 
