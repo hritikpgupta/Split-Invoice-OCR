@@ -1,6 +1,6 @@
 package com.caleta.ocrInvoice.utilities
 
-import com.caleta.ocrInvoice.config.BeanConfig
+import com.caleta.ocrInvoice.model.Response
 import net.sourceforge.tess4j.Tesseract
 import net.sourceforge.tess4j.util.ImageHelper
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -26,19 +26,48 @@ class Ocr {
     @Value("\${height}")
     private val height: Int? = null
 
+    @Value("\${r-x-axis}")
+    private val rxAxis: Int? = null
+
+    @Value("\${r-y-axis}")
+    private val ryAxis: Int? = null
+
+    @Value("\${r-width}")
+    private val rwidth: Int? = null
+
+    @Value("\${r-height}")
+    private val rheight: Int? = null
+
+    @Value("\${d-x-axis}")
+    private val dxAxis: Int? = null
+
+    @Value("\${d-y-axis}")
+    private val dyAxis: Int? = null
+
+    @Value("\${d-width}")
+    private val dwidth: Int? = null
+
+    @Value("\${d-height}")
+    private val dheight: Int? = null
+
     @Autowired
     private lateinit var tesseract: Tesseract
 
-    fun performOcr(doc: PDDocument): String {
-        LOG.error("Performing OCR")
+    fun performOcr(doc: PDDocument): Response? {
         val render = PDFRenderer(doc)
         val image: BufferedImage = render.renderImageWithDPI(0, 300f)
-        val croppedImage: BufferedImage = ImageHelper.getSubImage(image, xAxis!!, yAxis!!, width!!, height!!)
+        val invoiceCrop: BufferedImage = ImageHelper.getSubImage(image, xAxis!!, yAxis!!, width!!, height!!)
+        val referenceCrop: BufferedImage = ImageHelper.getSubImage(image, rxAxis!!, ryAxis!!, rwidth!!, rheight!!)
+        val dateCrop: BufferedImage = ImageHelper.getSubImage(image,dxAxis!!, dyAxis!!, dwidth!!, dheight!!)
         return try {
-            tesseract.doOCR(croppedImage).trim()
+            Response(
+                tesseract.doOCR(invoiceCrop).trim(),
+                tesseract.doOCR(referenceCrop).trim(),
+                tesseract.doOCR(dateCrop).trim()
+            )
         } catch (e: Exception) {
             LOG.error("Error detected while performing OCR.", e)
-            ""
+            null
         }
     }
 }

@@ -3,6 +3,8 @@ package com.caleta.ocrInvoice.serviceImpl
 import com.caleta.ocrInvoice.model.InvoiceSplitInfo
 import com.caleta.ocrInvoice.service.MonitoringService
 import com.caleta.ocrInvoice.utilities.Ocr
+import com.caleta.ocrInvoice.utilities.formatDate
+import com.caleta.ocrInvoice.utilities.formatReference
 import org.apache.pdfbox.multipdf.PDFMergerUtility
 import org.apache.pdfbox.multipdf.Splitter
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -79,22 +81,32 @@ class MonitorServiceImpl : MonitoringService {
         val infoList = ArrayList<String>()
         val invoiceInfoMap = HashMap<String, InvoiceSplitInfo>()
         pages.forEach {
-            val text = ocr.performOcr(it)
-            if (text.isNotEmpty()) {
-                infoList.add(text)
+            val response = ocr.performOcr(it)
+            if (response != null) {
+                if (response.date.isNotEmpty() && response.invoice.isNotEmpty() && response.ref.isNotEmpty()) {
+                    infoList.add(
+                        "${response.invoice.trim()}-${
+                            response.ref.trim().formatReference()
+                        }-${response.date.trim().formatDate()}"
+                    )
+                } else {
+                    LOG.error("OCR returned empty string")
+                }
             } else {
-                LOG.error("OCR returned empty string")
+                LOG.error("OCR returned null Response")
             }
+
         }
         infoList.withIndex().forEach { value ->
             if (invoiceInfoMap.containsKey(value.value)) {
                 val info = invoiceInfoMap[value.value]
-                invoiceInfoMap[value.value] = InvoiceSplitInfo(info!!.start, value.index + 1)
+                invoiceInfoMap[value.value] = InvoiceSplitInfo(info!!.start, info.end + 1)
             } else {
                 invoiceInfoMap[value.value] = InvoiceSplitInfo(value.index + 1, value.index + 1)
             }
         }
         invoiceInfoMap.forEach {
+            LOG.info(it.key + it.value)
             splitPdf(it.value.start, it.value.end, doc, it.key)
         }
     }
