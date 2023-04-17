@@ -64,6 +64,7 @@ class MonitorServiceImpl : MonitoringService {
         } catch (e: Exception) {
             LOG.error("Error detected while monitoring folder.", e)
         }
+
     }
 
     private fun loadDocument(name: String): PDDocument {
@@ -106,9 +107,9 @@ class MonitorServiceImpl : MonitoringService {
             }
         }
         invoiceInfoMap.forEach {
-            LOG.info(it.key + it.value)
             splitPdf(it.value.start, it.value.end, doc, it.key)
         }
+        doc.close()
     }
 
     private fun splitPdf(startIndex: Int, endIndex: Int, document: PDDocument, fileName: String) {
@@ -122,6 +123,7 @@ class MonitorServiceImpl : MonitoringService {
             pdfMerger.destinationFileName = "$destinationPath\\$fileName.pdf"
             pages.forEach {
                 it.save("$tempPath\\${fileName}-${i++}.pdf")
+                it.close()
             }
             i = 1
             pages.forEach { _ ->
@@ -136,6 +138,7 @@ class MonitorServiceImpl : MonitoringService {
         } else {
             pages.forEach {
                 it.save("$destinationPath\\$fileName.pdf")
+                it.close()
             }
         }
     }
